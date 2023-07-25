@@ -8,22 +8,25 @@ exit_flag = False
 
 def box():
     text = '''\
-    __   .__.__  .__             ________    .__        __                   .___            
-    |  | _|__|  | |  |           /   __   \   |__| _____/  |________ __ __  __| _/___________ 
-    |  |/ /  |  | |  |    ______ \____    /   |  |/    \   __\_  __ \  |  \/ __ |/ __ \_  __ \
-    |    <|  |  |_|  |__ /_____/    /    /    |  |   |  \  |  |  | \/  |  / /_/ \  ___/|  | \/
-    |__|_ \__|____/____/           /____/     |__|___|  /__|  |__|  |____/\____ |\___  >__|   
-        \/                                           \/                       \/    \/       
-    '''
+ _    _ _ _        _____   _       _                  _           
+| |  (_) | |      |  _  | (_)     | |                | |          
+| | ___| | |______| |_| |  _ _ __ | |_ _ __ _   _  __| | ___ _ __ 
+| |/ / | | |______\____ | | | '_ \| __| '__| | | |/ _` |/ _ \ '__|
+|   <| | | |      .___/ / | | | | | |_| |  | |_| | (_| |  __/ |   
+|_|\_\_|_|_|      \____/  |_|_| |_|\__|_|   \__,_|\__,_|\___|_|  
+'''
     text_f = textwrap.indent(textwrap.dedent(text), ' ' * 3)
     print(text_f)
-
 
 
 def set_D():
     global DUMP_DIRECTORY
     print("* Enter the Dump Directory: ")
-    DUMP_DIRECTORY = input()
+    path = input()
+    while not os.path.exists(path):
+        print("* Inexistent path, enter a valid one: ")
+        path = input()
+    DUMP_DIRECTORY = path
 
 
 def set_UIP():
@@ -54,12 +57,14 @@ def port_scan():
     mode = input()
     if mode == '1':
         command = f"nmap -sCV -p- --min-rate 5000 -vv --open -Pn {TARGET_IP} > {DUMP_DIRECTORY}/nmap.txt"
-        os.system()
+        os.system(command)
     elif mode == '2':
         print("Select the port:")
         port = input()
         command = f"nmap -sCV -vv --min-rate 5000 -Pn -p {port} {TARGET_IP} >{DUMP_DIRECTORY}/nmap.txt"
         os.system(command)
+    elif mode == 'M':
+        menu()
     else: 
         print("!!!!! INPUT ERROR !!!!!")
 
@@ -108,9 +113,24 @@ def fuzzing():
         command2 = "rm subdomains-top1mil-20000.txt"
         os.system(command2)
     elif mode == '2':
-        print("a")    
+        os.system("wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Discovery/DNS/subdomains-top1million-5000.txt")
+        command = f" gobuster vhst -w {TARGET_IP} -wsubdomains-top1million-5000.txt > {DUMP_DIRECTORY}/subdom_enum.txt"
+        os.system(command)
+        command2 = "rm subdomains-top1million-5000.txt"
+        os.system(command2)
+    elif mode == 'M':
+        menu()
     else: 
         error()
+
+
+def brute_force():
+    print("* Introduce a username:")
+    username = input()
+    os.system("wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt")
+    command = f"hydra -L {username} -P 10-million-password-list-top-1000000.txt {TARGET_IP} ssh"
+    os.system(command)
+
 
 
 def menu():
@@ -121,10 +141,12 @@ def menu():
                                     USER IP: {USER_IP}                                       
                                   TARGET IP: {TARGET_IP}                                     
                             DUMP DIRECTORY: {DUMP_DIRECTORY}                                 
-                                                                                             
-      - S: Settings                                                                          
+                                                                                                                                                                    
       - PS: Execute a port Scan                                                              
-      - F: Fuzzing test                                                                      
+      - F: Fuzzing test
+      - BF: Brute Force password           
+      - M: Go back to Menu
+      - S: Settings                                                  
       - E: Exit the application                                                             
     ******************************************************************************************
     '''
@@ -133,7 +155,7 @@ def menu():
     print(text_f)
 
     #Possible actions
-    actions = {"S": settings, "PS": port_scan, "E": exit_menu, "F": fuzzing}
+    actions = {"S": settings, "PS": port_scan, "E": exit_menu, "F": fuzzing, "M": menu}
 
     while True:
         if exit_flag:
