@@ -130,7 +130,65 @@ def brute_force():
     os.system("wget https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwords/Common-Credentials/10-million-password-list-top-1000000.txt")
     command = f"hydra -L {username} -P 10-million-password-list-top-1000000.txt {TARGET_IP} ssh"
     os.system(command)
+    os.system("rm 10-million-password-list-top-1000000.txt")
 
+
+def john(hashes_file):
+    try:
+        with open(hashes_file, 'r') as file:
+            pass
+    except FileNotFoundError:
+        print(f"The file '{hashes_file}' was not found.")
+        return
+
+    try:
+        result = subprocess.run(["john", hashes_file], capture_output=True, text=True, check=True)
+        # verify password existence
+        if "password hashes cracked" in result.stdout:
+            print("Passwords found:")
+            print(result.stdout)
+        else:
+            print("No passwords found.")
+
+    except subprocess.CalledProcessError as e:
+        print("Error executing John the Ripper:")
+        print(e.stderr)
+
+
+def crack_password():
+    print("* If you want to crack just a password type 1, if you want to crack a file with passwords type 2: ")
+    mode = input()
+    if mode == 'M':
+        menu()
+    elif mode == '1':
+        print("* Introduce the hash: ")
+        hash_password = input()
+        
+        with open('crack.txt', 'w') as crack:
+            crack.write(f"kill:{hash_password}\n")
+            john(crack.txt)
+
+    elif mode == '2':
+        print("* Insert the full file's PATH: ")
+        file = input()
+        john(file)
+    
+    else:
+        error()
+
+
+def netcat():
+    print("* Enter a port between 1024 and 2000: ")
+    port = int(input())
+    while not 1024 <= port <= 2000:
+        print("* Not valid port, enter a port between 1024 and 2000: ")
+        port = int(input())
+    command = f"nc -lvnp {port}"
+    os.system(command)
+
+
+def burpsuite():
+    os.system("burpsuite")
 
 
 def menu():
@@ -144,7 +202,10 @@ def menu():
                                                                                                                                                                     
       - PS: Execute a port Scan                                                              
       - F: Fuzzing test
-      - BF: Brute Force password           
+      - BF: Brute Force service password
+      - CP: Crack hash password           
+      - N: Activate a listener
+      - B: Execute Burpsuite
       - M: Go back to Menu
       - S: Settings                                                  
       - E: Exit the application                                                             
@@ -155,7 +216,7 @@ def menu():
     print(text_f)
 
     #Possible actions
-    actions = {"S": settings, "PS": port_scan, "E": exit_menu, "F": fuzzing, "M": menu}
+    actions = {"S": settings, "PS": port_scan, "E": exit_menu, "F": fuzzing, "M": menu, "BF": brute_force, "CP": crack_password, "N": netcat, "B": burpsuite}
 
     while True:
         if exit_flag:
