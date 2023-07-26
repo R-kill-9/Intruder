@@ -19,8 +19,5 @@ After inserting these IPs you access to the main Menu. Here you can execute:
 -   B: Execute BURPSUITE
 -   M: Going back to Menu
 -   E: Exit
--   S: Settings
-  - Change User Ip
-  - Change Target Ip
-  - Change Dump Directory
+-   S: Settings  (Change User Ip, Change Target Ip, Change Dump Directory)
   
